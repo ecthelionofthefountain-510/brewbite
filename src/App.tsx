@@ -113,7 +113,6 @@ export default function App() {
         <div className="header-top">
           <div className="brand">
             <h1>
-              <span className="logo">🍴</span>
               <span className="title">Lunchläget</span>
             </h1>
             <p className="tagline">i Ystad med omnejd</p>
