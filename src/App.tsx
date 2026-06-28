@@ -111,10 +111,13 @@ export default function App() {
     <div className="app">
       <header className="header">
         <div className="header-top">
-          <h1>
-            <span className="logo">🍴</span>
-            <span className="title">Lunch i Ystad</span>
-          </h1>
+          <div className="brand">
+            <h1>
+              <span className="logo">🍴</span>
+              <span className="title">Lunchläget</span>
+            </h1>
+            <p className="tagline">i Ystad med omnejd</p>
+          </div>
           <button
             className={`locate ${status === 'granted' ? 'on' : ''}`}
             onClick={request}

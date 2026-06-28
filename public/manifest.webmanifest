@@ -1,6 +1,6 @@
 {
-  "name": "Lunch i Ystad",
-  "short_name": "Lunch Ystad",
+  "name": "Lunchläget – i Ystad med omnejd",
+  "short_name": "Lunchläget",
   "description": "Dagens luncher i Ystad med omnejd — samlat på ett ställe.",
   "start_url": "/",
   "display": "standalone",
