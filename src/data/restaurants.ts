@@ -1,4 +1,4 @@
-import type { LunchDish, Restaurant, Weekday } from '../types'
+import type { LunchDish, OpenRule, Restaurant, Weekday } from '../types'
 import { MON_FRI, TUE_FRI, ALL_DAYS } from '../types'
 
 /**
@@ -207,3 +207,29 @@ export const restaurants: Restaurant[] = [
     note: 'I Sandskogen. Öppet maj–aug.',
   },
 ]
+
+/**
+ * Strukturerade lunchtider per restaurang-id, för "Öppet nu"-status.
+ * Ungefärliga och bör verifieras. Ställen som saknas här (t.ex. okänd tid)
+ * får ingen öppet-nu-markering.
+ */
+export const openHours: Record<string, OpenRule[]> = {
+  'grandens-mat': [
+    { days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'], from: '11:00', to: '15:30' },
+    { days: ['sun'], from: '12:00', to: '15:30' },
+  ],
+  tumult: [{ days: TUE_FRI, from: '11:30', to: '14:00' }],
+  marinan: [{ days: ALL_DAYS, from: '11:30', to: '23:00' }],
+  'port-ysb': [{ days: MON_FRI, from: '11:30', to: '13:30' }],
+  tryffelsvinet: [{ days: ['wed', 'thu', 'fri'], from: '11:30', to: '15:00' }],
+  'brasserie-du-sud': [{ days: MON_FRI, from: '11:30', to: '14:00' }],
+  bakfickan: [{ days: ALL_DAYS, from: '12:00', to: '15:00' }],
+  backahasten: [{ days: ALL_DAYS, from: '10:00', to: '18:00' }],
+  'hos-morten': [{ days: ['tue', 'wed', 'thu', 'fri', 'sat'], from: '11:30', to: '15:00' }],
+  'lisas-skafferi': [{ days: MON_FRI, from: '11:30', to: '13:30' }],
+  fritidsbaren: [{ days: ALL_DAYS, from: '11:00', to: '20:00' }],
+  jaktpaviljongen: [
+    { days: MON_FRI, from: '11:30', to: '20:00' },
+    { days: ['sat', 'sun'], from: '12:00', to: '20:00' },
+  ],
+}

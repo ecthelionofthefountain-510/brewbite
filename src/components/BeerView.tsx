@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react'
-import { beerspots } from '../data/beerspots'
+import { beerspots, happyHours } from '../data/beerspots'
 import {
   CONTAINER_LABEL,
   BEER_SORT_LABEL,
@@ -8,6 +8,8 @@ import {
   type BeerSpot,
 } from '../types'
 import { distanceKm, formatDistance } from '../lib/distance'
+import { activeNow } from '../lib/time'
+import { useNow } from '../hooks/useNow'
 import { YSTAD_CENTER } from '../data/restaurants'
 import type { Coords } from '../hooks/useGeolocation'
 import MapView, { type MapPoint } from './MapView'
@@ -46,6 +48,7 @@ export default function BeerView({
 }) {
   const { isFavorite, toggle } = fav
   const { coords } = geo
+  const { weekday, minutes } = useNow()
   const [sort, setSort] = useState<BeerSort>('cl')
   const [happyOnly, setHappyOnly] = useState(false)
   const [view, setView] = useState<'list' | 'map'>('list')
@@ -154,8 +157,16 @@ export default function BeerView({
             {items.length === 0 && (
               <li className="empty">Inga ställen matchar. Stäng av happy hour-filtret?</li>
             )}
-            {items.map(({ spot: s, cl, distance }, i) => (
-              <li key={s.id} className="card beercard" style={{ '--i': i } as CSSProperties}>
+            {items.map(({ spot: s, cl, distance }, i) => {
+              const hh = happyHours[s.id]
+              const hhNow = hh ? activeNow(hh, weekday, minutes) : false
+              return (
+              <li
+                key={s.id}
+                className={`card beercard ${hhNow ? 'hhnow' : ''}`}
+                style={{ '--i': i } as CSSProperties}
+              >
+                {hhNow && <div className="hhnow-badge">🍺 Happy hour just nu!</div>}
                 <div className="card-head">
                   <div>
                     <h2>
@@ -203,7 +214,8 @@ export default function BeerView({
                   Vägbeskrivning →
                 </a>
               </li>
-            ))}
+              )
+            })}
           </ul>
         )}
       </main>

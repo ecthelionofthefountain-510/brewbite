@@ -1,4 +1,4 @@
-import type { BeerSpot } from '../types'
+import type { BeerSpot, OpenRule } from '../types'
 
 /**
  * Öl-ställen i Ystad – "var hittar man billigaste stora starken".
@@ -197,3 +197,12 @@ export const beerspots: BeerSpot[] = [
     priceIsExample: true,
   },
 ]
+
+/**
+ * Strukturerade happy hour-tider per öl-id, för "Happy hour nu"-markering.
+ * Exempeldata. Ställen med bara fritext-info (utan klockslag) saknas här.
+ */
+export const happyHours: Record<string, OpenRule> = {
+  'kings-head': { days: ['mon', 'tue', 'wed', 'thu', 'fri'], from: '16:00', to: '18:00' },
+  'harrys-beer': { days: ['fri', 'sat'], from: '22:00', to: '23:00' },
+}

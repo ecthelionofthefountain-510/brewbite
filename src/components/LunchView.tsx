@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react'
-import { restaurants, YSTAD_CENTER } from '../data/restaurants'
+import { restaurants, openHours, YSTAD_CENTER } from '../data/restaurants'
 import {
   WEEKDAYS,
   WEEKDAY_LABEL,
@@ -8,6 +8,8 @@ import {
   type Weekday,
 } from '../types'
 import { distanceKm, formatDistance, weekdayOf } from '../lib/distance'
+import { anyActiveNow } from '../lib/time'
+import { useNow } from '../hooks/useNow'
 import type { Coords } from '../hooks/useGeolocation'
 import MapView, { type MapPoint } from './MapView'
 import TopBar, { type Mode } from './TopBar'
@@ -41,6 +43,7 @@ export default function LunchView({
 }) {
   const { isFavorite, toggle } = fav
   const { coords } = geo
+  const { weekday, minutes } = useNow()
   const today = weekdayOf(new Date())
   const [day, setDay] = useState<Weekday>(today)
   const [query, setQuery] = useState('')
@@ -169,6 +172,18 @@ export default function LunchView({
                       {r.price != null && <> · {r.price} kr</>}
                       {distance != null && <> · {formatDistance(distance)}</>}
                     </p>
+                    {day === today && openHours[r.id] && (
+                      <span
+                        className={`statuspill ${
+                          anyActiveNow(openHours[r.id], weekday, minutes) ? 'open' : 'closed'
+                        }`}
+                      >
+                        <span className="pip" />
+                        {anyActiveNow(openHours[r.id], weekday, minutes)
+                          ? 'Öppet nu'
+                          : 'Stängt just nu'}
+                      </span>
+                    )}
                   </div>
                   <button
                     className={`fav ${isFavorite(r.id) ? 'on' : ''}`}

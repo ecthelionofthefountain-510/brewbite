@@ -740,3 +740,62 @@ button {
   padding: 6px 12px;
   border-radius: 10px;
 }
+
+/* Öppet nu-status (lunch) */
+.statuspill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 11px;
+  border-radius: 999px;
+}
+.statuspill .pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.statuspill.open {
+  color: #6ee7a8;
+  background: rgba(74, 222, 128, 0.14);
+}
+.statuspill.open .pip {
+  background: #4ade80;
+  box-shadow: 0 0 6px 1px #4ade80;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+.statuspill.closed {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+.statuspill.closed .pip {
+  background: var(--faint);
+}
+
+/* Happy hour just nu (öl) */
+@keyframes pulse-badge {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+.hhnow-badge {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #3a2c05;
+  background: linear-gradient(135deg, #fcd34d, var(--amber));
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 6px 16px -6px rgba(251, 191, 36, 0.7);
+  animation: pulse-badge 1.6s ease-in-out infinite;
+}
+.card.hhnow {
+  box-shadow: var(--raise), 0 0 0 1.5px rgba(251, 191, 36, 0.5);
+}

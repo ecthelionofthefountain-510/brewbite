@@ -17,6 +17,13 @@ export const MON_FRI: Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri']
 export const TUE_FRI: Weekday[] = ['tue', 'wed', 'thu', 'fri']
 export const ALL_DAYS: Weekday[] = [...WEEKDAYS]
 
+/** Ett öppet-fönster: vilka dagar och mellan vilka klockslag ("HH:MM"). */
+export interface OpenRule {
+  days: Weekday[]
+  from: string
+  to: string
+}
+
 /** Kost-märkning på en enskild rätt. */
 export type DishTag = 'veg' | 'vegan' | 'fish' | 'meat' | 'gluten-free'
 
