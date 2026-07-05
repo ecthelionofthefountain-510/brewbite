@@ -6,6 +6,7 @@ import {
   krPerCl,
   type BeerSort,
   type BeerSpot,
+  type Container,
 } from '../types'
 import { distanceKm, formatDistance } from '../lib/distance'
 import { activeNow } from '../lib/time'
@@ -26,6 +27,7 @@ interface Geo {
 }
 
 const SORTS: BeerSort[] = ['cl', 'price', 'distance']
+const CONTAINERS: Container[] = ['fat', 'flaska', 'burk']
 
 function fmtCl(n: number): string {
   return `${n.toFixed(2).replace('.', ',')} kr/cl`
@@ -51,8 +53,22 @@ export default function BeerView({
   const { weekday, minutes } = useNow()
   const [sort, setSort] = useState<BeerSort>('cl')
   const [happyOnly, setHappyOnly] = useState(false)
+  const [query, setQuery] = useState('')
+  const [containers, setContainers] = useState<Set<Container>>(new Set())
   const [view, setView] = useState<'list' | 'map'>('list')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [filterOpen, setFilterOpen] = useState(false)
+
+  const activeFilterCount = containers.size + (happyOnly ? 1 : 0)
+
+  function toggleContainer(c: Container) {
+    setContainers((prev) => {
+      const next = new Set(prev)
+      if (next.has(c)) next.delete(c)
+      else next.add(c)
+      return next
+    })
+  }
 
   // Billigaste kr/cl totalt — får trofén oavsett sortering.
   const cheapestId = useMemo(() => {
@@ -62,6 +78,8 @@ export default function BeerView({
   }, [])
 
   const items = useMemo(() => {
+    const q = query.trim().toLowerCase()
+
     let list = beerspots
       .map((s) => ({
         spot: s,
@@ -69,6 +87,14 @@ export default function BeerView({
         distance: coords ? distanceKm(coords, s) : null,
       }))
       .filter(({ spot }) => (happyOnly ? !!spot.happyHourInfo : true))
+      .filter(({ spot }) => (containers.size === 0 ? true : containers.has(spot.container)))
+      .filter(({ spot }) => {
+        if (!q) return true
+        const haystack = [spot.name, spot.area, spot.address, spot.brand]
+          .join(' ')
+          .toLowerCase()
+        return haystack.includes(q)
+      })
 
     list.sort((a, b) => {
       if (sort === 'price') return a.spot.price - b.spot.price
@@ -78,7 +104,7 @@ export default function BeerView({
       return a.cl - b.cl // 'cl' (default)
     })
     return list
-  }, [sort, happyOnly, coords])
+  }, [sort, happyOnly, containers, query, coords])
 
   const mapPoints: MapPoint[] = useMemo(
     () =>
@@ -101,28 +127,23 @@ export default function BeerView({
       <header className="toolbar">
         <ModeTabs mode={mode} setMode={setMode} />
 
-        <div className="beer-sort">
-          {SORTS.map((s) => (
-            <button
-              key={s}
-              className={`chip ${sort === s ? 'active' : ''} ${
-                s === 'distance' && !coords ? 'is-disabled' : ''
-              }`}
-              disabled={s === 'distance' && !coords}
-              onClick={() => setSort(s)}
-            >
-              {BEER_SORT_LABEL[s]}
-            </button>
-          ))}
-          <button
-            className={`chip ${happyOnly ? 'active' : ''}`}
-            onClick={() => setHappyOnly((v) => !v)}
-          >
-            🕒 Happy hour
-          </button>
+        <div className="search">
+          <input
+            type="search"
+            placeholder="Sök krog, adress eller märke…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
 
         <div className="viewtabs">
+          <button
+            className={`filter-btn ${activeFilterCount > 0 ? 'active' : ''}`}
+            onClick={() => setFilterOpen(true)}
+          >
+            ⚙️ Filter
+            {activeFilterCount > 0 && <span className="filter-badge">{activeFilterCount}</span>}
+          </button>
           <button className={view === 'list' ? 'active' : ''} onClick={() => setView('list')}>
             Lista
           </button>
@@ -132,6 +153,25 @@ export default function BeerView({
           <span className="count">{items.length} ställen</span>
         </div>
       </header>
+
+      {filterOpen && (
+        <FilterSheet
+          sort={sort}
+          setSort={setSort}
+          happyOnly={happyOnly}
+          setHappyOnly={setHappyOnly}
+          containers={containers}
+          toggleContainer={toggleContainer}
+          coords={coords}
+          resultCount={items.length}
+          onReset={() => {
+            setSort('cl')
+            setHappyOnly(false)
+            setContainers(new Set())
+          }}
+          onClose={() => setFilterOpen(false)}
+        />
+      )}
 
       <main className="main">
         {view === 'map' ? (
@@ -157,7 +197,7 @@ export default function BeerView({
         ) : (
           <ul className="list">
             {items.length === 0 && (
-              <li className="empty">Inga ställen matchar. Stäng av happy hour-filtret?</li>
+              <li className="empty">Inga ställen matchar. Prova ett annat sök eller filter.</li>
             )}
             {items.map(({ spot: s, cl, distance }, i) => {
               const hh = happyHours[s.id]
@@ -178,6 +218,7 @@ export default function BeerView({
                       {s.area}
                       {distance != null && <> · {formatDistance(distance)}</>}
                     </p>
+                    <p className="beer-address">📍 {s.address}</p>
                   </div>
                   <button
                     className={`fav ${isFavorite(s.id) ? 'on' : ''}`}
@@ -261,6 +302,7 @@ function BeerPopup({
             {s.area}
             {distance != null && <> · {formatDistance(distance)}</>}
           </p>
+          <p className="beer-address">📍 {s.address}</p>
         </div>
         <button
           className={`fav ${isFavorite(s.id) ? 'on' : ''}`}
@@ -285,6 +327,95 @@ function BeerPopup({
       <a className="menu-cta" href={directionsLink(s)} target="_blank" rel="noreferrer">
         Vägbeskrivning →
       </a>
+    </div>
+  )
+}
+
+function FilterSheet({
+  sort,
+  setSort,
+  happyOnly,
+  setHappyOnly,
+  containers,
+  toggleContainer,
+  coords,
+  resultCount,
+  onReset,
+  onClose,
+}: {
+  sort: BeerSort
+  setSort: (s: BeerSort) => void
+  happyOnly: boolean
+  setHappyOnly: (v: boolean) => void
+  containers: Set<Container>
+  toggleContainer: (c: Container) => void
+  coords: Coords | null
+  resultCount: number
+  onReset: () => void
+  onClose: () => void
+}) {
+  return (
+    <div className="filter-backdrop" onClick={onClose}>
+      <div className="filter-sheet" onClick={(e) => e.stopPropagation()}>
+        <button className="popup-close" onClick={onClose} aria-label="Stäng">
+          ✕
+        </button>
+        <h2 className="filter-title">Filter &amp; sortering</h2>
+
+        <div className="filter-section">
+          <h3>Sortera efter</h3>
+          <div className="beer-sort">
+            {SORTS.map((s) => (
+              <button
+                key={s}
+                className={`chip ${sort === s ? 'active' : ''} ${
+                  s === 'distance' && !coords ? 'is-disabled' : ''
+                }`}
+                disabled={s === 'distance' && !coords}
+                onClick={() => setSort(s)}
+              >
+                {BEER_SORT_LABEL[s]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <h3>Typ</h3>
+          <div className="beer-sort">
+            {CONTAINERS.map((c) => (
+              <button
+                key={c}
+                className={`chip ${containers.has(c) ? 'active' : ''}`}
+                onClick={() => toggleContainer(c)}
+              >
+                {CONTAINER_LABEL[c]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <h3>Övrigt</h3>
+          <div className="beer-sort">
+            <button
+              className={`chip ${happyOnly ? 'active' : ''}`}
+              onClick={() => setHappyOnly(!happyOnly)}
+            >
+              🕒 Happy hour just nu
+            </button>
+          </div>
+        </div>
+
+        <div className="filter-actions">
+          <button className="filter-reset" onClick={onReset}>
+            Nollställ
+          </button>
+          <button className="menu-cta filter-apply" onClick={onClose}>
+            Visa {resultCount} ställen
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

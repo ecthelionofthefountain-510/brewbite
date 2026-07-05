@@ -225,7 +225,7 @@ button {
 /* ---------- Day selector ---------- */
 .days {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-top: 11px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -236,9 +236,9 @@ button {
 }
 .day {
   position: relative;
-  flex: 1 0 auto;
-  min-width: 48px;
-  padding: 9px 4px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 9px 2px;
   border: none;
   background: var(--bg);
   border-radius: 13px;
@@ -396,6 +396,87 @@ button {
   animation: fade 0.4s ease;
 }
 
+/* ---------- Filter-knapp + modal ---------- */
+.filter-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.filter-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+.filter-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: rgba(10, 10, 12, 0.6);
+  display: flex;
+  align-items: flex-end;
+  animation: fade 0.2s ease;
+}
+.filter-sheet {
+  position: relative;
+  width: 100%;
+  max-height: 82vh;
+  overflow-y: auto;
+  background: var(--bg);
+  border-radius: 24px 24px 0 0;
+  padding: 20px 20px calc(env(safe-area-inset-bottom) + 20px);
+  box-shadow: 0 -10px 30px -10px #0c0f1d;
+  animation: rise 0.25s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.filter-title {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 800;
+}
+.filter-section {
+  margin-top: 18px;
+}
+.filter-section h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+}
+.filter-section .beer-sort {
+  margin-top: 10px;
+}
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+.filter-reset {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 6px;
+}
+.filter-reset:active {
+  color: var(--text);
+}
+.filter-apply {
+  flex: 1;
+  justify-content: center;
+  margin-top: 0;
+}
+
 /* ---------- List ---------- */
 .main {
   flex: 1;
@@ -452,6 +533,11 @@ button {
   margin: 3px 0 0;
   font-size: 13px;
   color: var(--muted);
+}
+.beer-address {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--faint);
 }
 .fav {
   border: none;
