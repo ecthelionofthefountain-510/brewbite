@@ -750,6 +750,14 @@ button {
 .popup .card-head {
   padding-right: 28px;
 }
+.popup-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fav-inline {
+  font-size: 19px;
+}
 
 /* ---------- Disclaimer ---------- */
 .disclaimer {

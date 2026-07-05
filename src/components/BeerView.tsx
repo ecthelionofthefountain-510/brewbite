@@ -297,20 +297,22 @@ function BeerPopup({
       </button>
       <div className="card-head">
         <div>
-          <h2>{s.name}</h2>
+          <h2 className="popup-title">
+            {s.name}
+            <button
+              className={`fav fav-inline ${isFavorite(s.id) ? 'on' : ''}`}
+              onClick={() => toggle(s.id)}
+              aria-label="Spara som favorit"
+            >
+              {isFavorite(s.id) ? '★' : '☆'}
+            </button>
+          </h2>
           <p className="meta">
             {s.area}
             {distance != null && <> · {formatDistance(distance)}</>}
           </p>
           <p className="beer-address">📍 {s.address}</p>
         </div>
-        <button
-          className={`fav ${isFavorite(s.id) ? 'on' : ''}`}
-          onClick={() => toggle(s.id)}
-          aria-label="Spara som favorit"
-        >
-          {isFavorite(s.id) ? '★' : '☆'}
-        </button>
       </div>
       <div className="beer-price-row">
         <div className="beer-price">

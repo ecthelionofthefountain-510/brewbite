@@ -281,20 +281,22 @@ function LunchPopup({
       </button>
       <div className="card-head">
         <div>
-          <h2>{r.name}</h2>
+          <h2 className="popup-title">
+            {r.name}
+            <button
+              className={`fav fav-inline ${isFavorite(r.id) ? 'on' : ''}`}
+              onClick={() => toggle(r.id)}
+              aria-label="Spara som favorit"
+            >
+              {isFavorite(r.id) ? '★' : '☆'}
+            </button>
+          </h2>
           <p className="meta">
             {r.area}
             {r.price != null && <> · {r.price} kr</>}
             {distance != null && <> · {formatDistance(distance)}</>}
           </p>
         </div>
-        <button
-          className={`fav ${isFavorite(r.id) ? 'on' : ''}`}
-          onClick={() => toggle(r.id)}
-          aria-label="Spara som favorit"
-        >
-          {isFavorite(r.id) ? '★' : '☆'}
-        </button>
       </div>
       {menu.length > 0 && (
         <ul className="dishes">
