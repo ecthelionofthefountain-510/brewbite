@@ -747,6 +747,9 @@ button {
   font-size: 16px;
   color: var(--muted);
 }
+.popup .card-head {
+  padding-right: 28px;
+}
 
 /* ---------- Disclaimer ---------- */
 .disclaimer {
