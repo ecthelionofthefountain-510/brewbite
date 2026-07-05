@@ -122,7 +122,7 @@ export default function BeerView({
 
   return (
     <>
-      <Hero mode={mode} status={geo.status} onLocate={geo.request} />
+      <Hero status={geo.status} onLocate={geo.request} />
 
       <header className="toolbar">
         <ModeTabs mode={mode} setMode={setMode} />

@@ -11,7 +11,7 @@ export default defineConfig({
       // Använd vår befintliga public/manifest.webmanifest istället för att generera en ny.
       manifest: false,
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,otf,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
         runtimeCaching: [
           {
             // OpenStreetMap-kartrutor
