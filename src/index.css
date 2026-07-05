@@ -157,13 +157,21 @@ button {
   width: 60px;
   height: auto;
 }
+@font-face {
+  font-family: 'Vanrott';
+  src: url('/fonts/VANROTT.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 .hero-title {
   margin: 0;
 }
 .hero-title .title {
-  font-family: 'Lobster', system-ui, cursive;
-  font-size: 44px;
+  font-family: 'Vanrott', system-ui, cursive;
+  font-size: 40px;
   font-weight: 400;
+  letter-spacing: 0.03em;
   line-height: 1.2;
   display: inline-block;
   padding: 0 0.06em 0.14em;
