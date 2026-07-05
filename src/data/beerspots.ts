@@ -7,15 +7,11 @@ import type { BeerSpot, OpenRule } from '../types'
  * i centrala Ystad ("Här är Ystads billigaste öl"), kollade i första halvan av
  * juni 2026. Varje rad avser ställets BILLIGASTE öl, och nyckeltalet kr/cl gör
  * olika storlekar jämförbara. Namn/adresser/koordinater är geokodade via
- * OpenStreetMap. Rader märkta "TODO: koordinat" fick ingen träff och ligger
- * tillfälligt på Ystad centrum – finjustera lat/lng där. Priser ändras.
+ * OpenStreetMap. Priser ändras – dubbelkolla vid behov.
  *
  * Container-typen (fat/flaska) är härledd: (fat) i källan eller ≥40 cl = fat,
  * annars flaska. Justera vid behov.
  */
-
-// Platshållare för ställen utan geokod-träff.
-const CENTER = { lat: 55.4297, lng: 13.8204 }
 
 export const beerspots: BeerSpot[] = [
   {
@@ -60,8 +56,8 @@ export const beerspots: BeerSpot[] = [
     name: 'Nongs',
     area: 'Ystad centrum',
     address: 'Ystad',
-    lat: CENTER.lat, // TODO: koordinat
-    lng: CENTER.lng,
+    lat: 55.4274040,
+    lng: 13.8214967,
     brand: 'Mariestad/Falcon/Eriksberg',
     container: 'fat',
     volumeCl: 50,
@@ -110,8 +106,8 @@ export const beerspots: BeerSpot[] = [
     name: 'Jaktens Kiosk & Minigolf',
     area: 'Sandskogen',
     address: 'Ystad',
-    lat: CENTER.lat, // TODO: koordinat
-    lng: CENTER.lng,
+    lat: 55.4309659,
+    lng: 13.8656285,
     brand: 'Carlsberg',
     container: 'fat',
     volumeCl: 40,
@@ -135,8 +131,8 @@ export const beerspots: BeerSpot[] = [
     name: 'Gusto',
     area: 'Ystad centrum',
     address: 'Ystad',
-    lat: CENTER.lat, // TODO: koordinat
-    lng: CENTER.lng,
+    lat: 55.4305947,
+    lng: 13.8189957,
     brand: 'Moretti',
     container: 'flaska',
     volumeCl: 33,
@@ -297,8 +293,8 @@ export const beerspots: BeerSpot[] = [
     name: 'Kaffe & Bubbel',
     area: 'Ystad centrum',
     address: 'Ystad',
-    lat: CENTER.lat, // TODO: koordinat
-    lng: CENTER.lng,
+    lat: 55.4306598,
+    lng: 13.8276024,
     brand: 'Staropramen',
     container: 'flaska',
     volumeCl: 33,
@@ -309,8 +305,8 @@ export const beerspots: BeerSpot[] = [
     name: 'Zaap Thai Kitchen',
     area: 'Ystad centrum',
     address: 'Ystad',
-    lat: CENTER.lat, // TODO: koordinat
-    lng: CENTER.lng,
+    lat: 55.4305960,
+    lng: 13.8255034,
     brand: 'Leo',
     container: 'flaska',
     volumeCl: 33,
@@ -343,12 +339,12 @@ export const beerspots: BeerSpot[] = [
     note: 'På Hotell Continental.',
   },
   {
-    id: 'trattoria35-beer',
-    name: 'Trattoria 35',
+    id: 'fratelli-35-beer',
+    name: 'Fratelli 35',
     area: 'Ystad centrum',
     address: 'Ystad',
-    lat: CENTER.lat, // TODO: koordinat
-    lng: CENTER.lng,
+    lat: 55.4301062,
+    lng: 13.8217720,
     brand: 'Moretti',
     container: 'fat',
     volumeCl: 40,
@@ -385,8 +381,8 @@ export const beerspots: BeerSpot[] = [
     name: 'Grafitti',
     area: 'Ystad centrum',
     address: 'Ystad',
-    lat: CENTER.lat, // TODO: koordinat
-    lng: CENTER.lng,
+    lat: 55.4306183,
+    lng: 13.8260470,
     brand: 'Staropramen',
     container: 'fat',
     volumeCl: 40,
@@ -410,8 +406,8 @@ export const beerspots: BeerSpot[] = [
     name: 'Walvet',
     area: 'Ystad centrum',
     address: 'Ystad',
-    lat: CENTER.lat, // TODO: koordinat
-    lng: CENTER.lng,
+    lat: 55.4298548,
+    lng: 13.8211736,
     brand: 'Peroni',
     container: 'fat',
     volumeCl: 40,
@@ -473,8 +469,8 @@ export const beerspots: BeerSpot[] = [
     name: 'Klubben',
     area: 'Ystad centrum',
     address: 'Ystad',
-    lat: CENTER.lat, // TODO: koordinat
-    lng: CENTER.lng,
+    lat: 55.4290153,
+    lng: 13.8179291,
     brand: 'Heineken',
     container: 'flaska',
     volumeCl: 33,
