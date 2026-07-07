@@ -4,8 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // GitHub Pages project-sajt: appen ligger på /kroglaget/, inte på domänens rot.
-  base: '/kroglaget/',
+  // GitHub Pages project-sajt: appen ligger på /brewbite/, inte på domänens rot.
+  base: '/brewbite/',
   plugins: [
     react(),
     VitePWA({
