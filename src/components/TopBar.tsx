@@ -19,7 +19,7 @@ export function Hero({ status, onLocate }: HeroProps) {
 
       <div className="hero-inner">
         <img
-          src="/brewbite-header.png"
+          src={`${import.meta.env.BASE_URL}brewbite-header.png`}
           alt="BrewBite — Good food. Cold brews. Better places."
           className="hero-logo"
         />
