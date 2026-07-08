@@ -1,4 +1,4 @@
-import type { BeerSpot, OpenRule } from '../types'
+import { ALL_DAYS, MON_FRI, type BeerSpot, type OpenRule } from '../types'
 
 /**
  * Öl-ställen i Ystad – "var hittar man billigaste ölen".
@@ -517,7 +517,101 @@ export const beerspots: BeerSpot[] = [
 ]
 
 /**
- * Strukturerade happy hour-tider per öl-id, för "Happy hour nu"-markering.
- * Tom tills vi har verifierade happy hour-tider – fyll på med { days, from, to }.
+ * Öppettider per öl-ställe – driver "Öppet just nu"-filtret och statuspillen.
+ * Avser ställets/barens hela öppettid (inte bara lunch). Fönster som stänger
+ * efter midnatt skrivs som t.ex. 23:00–03:00 (activeNow hanterar wrap).
+ *
+ * OBS: dessa är hopsamlade från publika källor (juli 2026) och är INTE
+ * verifierade mot ställena – dubbelkolla innan de tas för sanning. Ställen som
+ * saknas här räknas som "okänt" och göms när filtret är på; fyll på resten
+ * ({ days, from, to }) allt eftersom tiderna bekräftas.
  */
-export const happyHours: Record<string, OpenRule> = {}
+export const openBeerHours: Record<string, OpenRule[]> = {
+  'marinan-beer': [{ days: ALL_DAYS, from: '11:30', to: '23:00' }],
+  'fritidsbaren-beer': [{ days: ALL_DAYS, from: '11:00', to: '20:00' }],
+  'olearys-beer': [
+    { days: ['mon', 'tue'], from: '11:00', to: '21:00' },
+    { days: ['wed', 'thu'], from: '11:00', to: '22:00' },
+    { days: ['fri', 'sat'], from: '11:00', to: '01:00' },
+    { days: ['sun'], from: '12:00', to: '21:00' },
+  ],
+  'kings-head': [
+    { days: ['mon', 'tue', 'wed'], from: '15:30', to: '23:00' },
+    { days: ['thu', 'fri'], from: '15:30', to: '01:00' },
+    { days: ['sat'], from: '12:00', to: '01:00' },
+    { days: ['sun'], from: '13:00', to: '23:00' },
+  ],
+  // Nattklubb – bara fre/lör sent. Öppettid inbegriper efter midnatt.
+  'klubben-beer': [{ days: ['fri', 'sat'], from: '23:00', to: '03:00' }],
+  'le-cardinal-beer': [
+    { days: MON_FRI, from: '11:30', to: '22:00' },
+    { days: ['sat', 'sun'], from: '12:00', to: '22:00' },
+  ],
+  'tumult-beer': [
+    { days: ['tue'], from: '11:30', to: '14:00' },
+    { days: ['wed', 'thu'], from: '11:30', to: '14:00' },
+    { days: ['wed', 'thu'], from: '17:00', to: '22:00' },
+    { days: ['fri'], from: '11:30', to: '23:00' },
+    { days: ['sat'], from: '17:00', to: '23:00' },
+  ],
+  'brasserie-beer': [
+    { days: MON_FRI, from: '11:30', to: '15:00' },
+    { days: MON_FRI, from: '17:00', to: '22:00' },
+    { days: ['sat'], from: '12:00', to: '15:00' },
+    { days: ['sat'], from: '17:00', to: '22:00' },
+  ],
+  'tryffelsvinet-beer': [
+    { days: ['wed', 'thu'], from: '11:30', to: '20:30' },
+    { days: ['fri'], from: '11:30', to: '22:00' },
+    { days: ['sat'], from: '12:00', to: '22:00' },
+    { days: ['sun'], from: '12:00', to: '20:30' },
+  ],
+  // Säsong: kaffestuga öppen maj–aug (som lunchdatan behandlar den).
+  'backahasten-beer': [{ days: ALL_DAYS, from: '10:00', to: '18:00' }],
+  'grandens-beer': [
+    { days: ['mon', 'tue', 'wed'], from: '11:00', to: '15:00' },
+    { days: ['thu'], from: '11:00', to: '22:00' },
+    { days: ['fri', 'sat'], from: '11:00', to: '23:00' },
+  ],
+  'cle-beer': [
+    { days: ['mon', 'tue', 'wed', 'thu'], from: '11:30', to: '22:00' },
+    { days: ['fri'], from: '11:30', to: '01:00' },
+    { days: ['sat'], from: '12:30', to: '01:00' },
+    { days: ['sun'], from: '12:30', to: '22:00' },
+  ],
+  'le-petit-beer': [
+    { days: ['tue', 'wed', 'thu', 'fri', 'sat', 'sun'], from: '17:00', to: '23:00' },
+  ],
+  // OBS: JH Matbar uppges stänga permanent 30 juli 2026 – ta bort då.
+  'jh-matbar-beer': [{ days: ['tue', 'wed', 'thu', 'fri', 'sat'], from: '17:30', to: '01:00' }],
+  'pinchos-beer': [
+    { days: ['mon', 'tue', 'wed', 'thu'], from: '12:00', to: '22:00' },
+    { days: ['fri', 'sat'], from: '12:00', to: '01:00' },
+    { days: ['sun'], from: '12:00', to: '21:00' },
+  ],
+  'port-beer': [
+    { days: MON_FRI, from: '11:30', to: '13:30' },
+    { days: ALL_DAYS, from: '17:30', to: '22:00' },
+  ],
+  // Öppningstid för kvällsklubben ungefärlig (18:00); stänger efter midnatt.
+  'walvet-beer': [
+    { days: ['wed'], from: '18:00', to: '02:00' },
+    { days: ['fri', 'sat'], from: '18:00', to: '03:00' },
+  ],
+  // Tis stängt.
+  'gusto-beer': [
+    { days: ['mon', 'wed', 'thu', 'fri', 'sat', 'sun'], from: '16:00', to: '21:00' },
+  ],
+  'broderna-m-beer': [
+    { days: ['mon', 'tue', 'wed', 'thu'], from: '11:15', to: '13:45' },
+    { days: ['mon', 'tue', 'wed', 'thu'], from: '16:00', to: '21:00' },
+    { days: ['fri'], from: '11:15', to: '13:45' },
+    { days: ['fri'], from: '16:00', to: '22:00' },
+    { days: ['sat'], from: '12:00', to: '22:00' },
+    { days: ['sun'], from: '14:00', to: '21:00' },
+  ],
+  'fratelli-35-beer': [
+    { days: ['mon', 'tue', 'wed', 'thu'], from: '11:00', to: '14:30' },
+    { days: ['fri', 'sat'], from: '12:00', to: '22:00' },
+  ],
+}

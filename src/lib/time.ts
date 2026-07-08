@@ -17,9 +17,25 @@ export interface TimeWindow {
   to: string
 }
 
-/** Är detta tidsfönster aktivt just nu (given veckodag + minut)? */
+const WEEK: Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+function prevWeekday(d: Weekday): Weekday {
+  return WEEK[(WEEK.indexOf(d) + 6) % 7]
+}
+
+/**
+ * Är detta tidsfönster aktivt just nu (given veckodag + minut)?
+ * Hanterar fönster som sträcker sig över midnatt (from > to), t.ex. 23:00–03:00:
+ * då räknas både kvällsdelen på startdagen och morgondelen dagen efter.
+ */
 export function activeNow(w: TimeWindow, weekday: Weekday, now: number): boolean {
-  return w.days.includes(weekday) && now >= hmToMin(w.from) && now < hmToMin(w.to)
+  const from = hmToMin(w.from)
+  const to = hmToMin(w.to)
+  if (from < to) {
+    return w.days.includes(weekday) && now >= from && now < to
+  }
+  const evening = w.days.includes(weekday) && now >= from
+  const morning = w.days.includes(prevWeekday(weekday)) && now < to
+  return evening || morning
 }
 
 /** Är något av fönstren aktivt just nu? */

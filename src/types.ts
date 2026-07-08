@@ -86,6 +86,14 @@ export const FILTER_TAGS: Tag[] = [
   'havsutsikt',
 ]
 
+export type LunchSort = 'name' | 'distance' | 'price'
+
+export const LUNCH_SORT_LABEL: Record<LunchSort, string> = {
+  name: 'Namn (A–Ö)',
+  distance: 'Närmast',
+  price: 'Lägsta pris',
+}
+
 export interface Restaurant {
   id: string
   name: string
@@ -143,10 +151,6 @@ export interface BeerSpot {
   volumeCl: number
   /** Ordinarie pris i kronor för en stor stark. */
   price: number
-  /** Happy hour-pris om sådant finns. */
-  happyHourPrice?: number
-  /** När happy hour gäller, fri text. */
-  happyHourInfo?: string
   website?: string
   note?: string
   /** True om priset är exempeldata, inte verifierat. */

@@ -5,7 +5,11 @@ import {
   WEEKDAY_LABEL,
   TAG_LABEL,
   DISH_TAG_LABEL,
+  FILTER_TAGS,
+  LUNCH_SORT_LABEL,
   type Weekday,
+  type Tag,
+  type LunchSort,
 } from '../types'
 import { distanceKm, formatDistance, weekdayOf } from '../lib/distance'
 import { anyActiveNow } from '../lib/time'
@@ -24,6 +28,8 @@ interface Geo {
   status: string
   request: () => void
 }
+
+const LUNCH_SORTS: LunchSort[] = ['name', 'distance', 'price']
 
 /** Bästa länken för att se aktuell lunch — egen sida/FB, annars en Google-sökning. */
 function menuLink(name: string, website?: string): string {
@@ -50,6 +56,27 @@ export default function LunchView({
   const [query, setQuery] = useState('')
   const [view, setView] = useState<'list' | 'map'>('list')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [sort, setSort] = useState<LunchSort>('name')
+  const [tags, setTags] = useState<Set<Tag>>(new Set())
+  const [openNow, setOpenNow] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+
+  const activeFilterCount = tags.size + (openNow ? 1 : 0)
+
+  function toggleTag(t: Tag) {
+    setTags((prev) => {
+      const next = new Set(prev)
+      if (next.has(t)) next.delete(t)
+      else next.add(t)
+      return next
+    })
+  }
+
+  // "Öppet just nu" gäller bara i dag — snäpp tillbaka till dagens dag när den slås på.
+  function setOpenNowSafe(v: boolean) {
+    setOpenNow(v)
+    if (v) setDay(today)
+  }
 
   const items = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -62,6 +89,8 @@ export default function LunchView({
       })
       .filter(({ restaurant: r, todaysMenu, openToday }) => {
         if (!openToday) return false
+        if (tags.size > 0 && !r.tags.some((t) => tags.has(t))) return false
+        if (openNow && !anyActiveNow(openHours[r.id], weekday, minutes)) return false
         if (q) {
           const haystack = [
             r.name,
@@ -80,11 +109,26 @@ export default function LunchView({
       const af = isFavorite(a.restaurant.id)
       const bf = isFavorite(b.restaurant.id)
       if (af !== bf) return af ? -1 : 1
+      if (sort === 'distance') {
+        if (a.distance == null && b.distance == null) {
+          /* faller igenom till namn */
+        } else if (a.distance == null) return 1
+        else if (b.distance == null) return -1
+        else if (a.distance !== b.distance) return a.distance - b.distance
+      } else if (sort === 'price') {
+        const ap = a.restaurant.price
+        const bp = b.restaurant.price
+        if (ap == null && bp == null) {
+          /* faller igenom till namn */
+        } else if (ap == null) return 1
+        else if (bp == null) return -1
+        else if (ap !== bp) return ap - bp
+      }
       return a.restaurant.name.localeCompare(b.restaurant.name, 'sv')
     })
 
     return list
-  }, [day, query, coords, isFavorite])
+  }, [day, query, coords, isFavorite, tags, openNow, sort, weekday, minutes])
 
   const mapPoints: MapPoint[] = useMemo(
     () =>
@@ -129,6 +173,13 @@ export default function LunchView({
         </div>
 
         <div className="viewtabs">
+          <button
+            className={`filter-btn ${activeFilterCount > 0 ? 'active' : ''}`}
+            onClick={() => setFilterOpen(true)}
+          >
+            ⚙️ Filter
+            {activeFilterCount > 0 && <span className="filter-badge">{activeFilterCount}</span>}
+          </button>
           <button className={view === 'list' ? 'active' : ''} onClick={() => setView('list')}>
             Lista
           </button>
@@ -138,6 +189,25 @@ export default function LunchView({
           <span className="count">{items.length} ställen</span>
         </div>
       </header>
+
+      {filterOpen && (
+        <LunchFilterSheet
+          sort={sort}
+          setSort={setSort}
+          tags={tags}
+          toggleTag={toggleTag}
+          openNow={openNow}
+          setOpenNow={setOpenNowSafe}
+          coords={coords}
+          resultCount={items.length}
+          onReset={() => {
+            setSort('name')
+            setTags(new Set())
+            setOpenNow(false)
+          }}
+          onClose={() => setFilterOpen(false)}
+        />
+      )}
 
       <main className="main">
         {view === 'map' ? (
@@ -163,7 +233,7 @@ export default function LunchView({
         ) : (
           <ul className="list">
             {items.length === 0 && (
-              <li className="empty">Inga luncher matchar. Prova en annan dag eller sök.</li>
+              <li className="empty">Inga luncher matchar. Prova en annan dag, sök eller filter.</li>
             )}
             {items.map(({ restaurant: r, todaysMenu, distance }, i) => (
               <li key={`${day}-${r.id}`} className="card" style={{ '--i': i } as CSSProperties}>
@@ -225,20 +295,22 @@ export default function LunchView({
                   </>
                 )}
 
-                <a
-                  className="menu-cta"
-                  href={menuLink(r.name, r.website)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Se aktuell meny →
-                </a>
-                <a
-                  className="report-link"
-                  href={reportLink(r.name, r.price != null ? `${r.price} kr` : undefined)}
-                >
-                  🚩 Rapportera fel info
-                </a>
+                <div className="card-actions">
+                  <a
+                    className="menu-cta"
+                    href={menuLink(r.name, r.website)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Se aktuell meny →
+                  </a>
+                  <a
+                    className="report-btn"
+                    href={reportLink(r.name, r.price != null ? `${r.price} kr` : undefined)}
+                  >
+                    Rapportera fel info
+                  </a>
+                </div>
 
                 {r.note && <p className="note">{r.note}</p>}
                 <p className="hours">{r.hours}</p>
@@ -300,16 +372,107 @@ function LunchPopup({
           ))}
         </ul>
       )}
-      <a className="menu-cta" href={menuLink(r.name, r.website)} target="_blank" rel="noreferrer">
-        Se aktuell meny →
-      </a>
-      <a
-        className="report-link"
-        href={reportLink(r.name, r.price != null ? `${r.price} kr` : undefined)}
-      >
-        🚩 Rapportera fel info
-      </a>
+      <div className="card-actions">
+        <a className="menu-cta" href={menuLink(r.name, r.website)} target="_blank" rel="noreferrer">
+          Se aktuell meny →
+        </a>
+        <a
+          className="report-btn"
+          href={reportLink(r.name, r.price != null ? `${r.price} kr` : undefined)}
+        >
+          Rapportera fel info
+        </a>
+      </div>
       <p className="hours">{r.hours}</p>
+    </div>
+  )
+}
+
+function LunchFilterSheet({
+  sort,
+  setSort,
+  tags,
+  toggleTag,
+  openNow,
+  setOpenNow,
+  coords,
+  resultCount,
+  onReset,
+  onClose,
+}: {
+  sort: LunchSort
+  setSort: (s: LunchSort) => void
+  tags: Set<Tag>
+  toggleTag: (t: Tag) => void
+  openNow: boolean
+  setOpenNow: (v: boolean) => void
+  coords: Coords | null
+  resultCount: number
+  onReset: () => void
+  onClose: () => void
+}) {
+  return (
+    <div className="filter-backdrop" onClick={onClose}>
+      <div className="filter-sheet" onClick={(e) => e.stopPropagation()}>
+        <button className="popup-close" onClick={onClose} aria-label="Stäng">
+          ✕
+        </button>
+        <h2 className="filter-title">Filter &amp; sortering</h2>
+
+        <div className="filter-section">
+          <h3>Sortera efter</h3>
+          <div className="beer-sort">
+            {LUNCH_SORTS.map((s) => (
+              <button
+                key={s}
+                className={`chip ${sort === s ? 'active' : ''} ${
+                  s === 'distance' && !coords ? 'is-disabled' : ''
+                }`}
+                disabled={s === 'distance' && !coords}
+                onClick={() => setSort(s)}
+              >
+                {LUNCH_SORT_LABEL[s]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <h3>Kök &amp; typ</h3>
+          <div className="beer-sort">
+            {FILTER_TAGS.map((t) => (
+              <button
+                key={t}
+                className={`chip ${tags.has(t) ? 'active' : ''}`}
+                onClick={() => toggleTag(t)}
+              >
+                {TAG_LABEL[t]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <h3>Övrigt</h3>
+          <div className="beer-sort">
+            <button
+              className={`chip ${openNow ? 'active' : ''}`}
+              onClick={() => setOpenNow(!openNow)}
+            >
+              🟢 Öppet just nu
+            </button>
+          </div>
+        </div>
+
+        <div className="filter-actions">
+          <button className="filter-reset" onClick={onReset}>
+            Nollställ
+          </button>
+          <button className="menu-cta filter-apply" onClick={onClose}>
+            Visa {resultCount} ställen
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

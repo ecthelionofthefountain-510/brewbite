@@ -22,6 +22,7 @@
   --inset: inset 4px 4px 9px var(--sd), inset -4px -4px 9px var(--sl);
   --inset-sm: inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
   --glow: 0 10px 26px -8px rgba(255, 122, 26, 0.7);
+  --glow-soft: 0 5px 14px -9px rgba(255, 122, 26, 0.5);
 
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
@@ -586,25 +587,42 @@ button {
   font-weight: 700;
   border-radius: 13px;
   text-decoration: none;
-  box-shadow: var(--glow);
+  box-shadow: var(--glow-soft);
   transition: transform 0.15s ease, box-shadow 0.2s ease, gap 0.2s ease;
 }
 .menu-cta:hover {
   gap: 11px;
-  box-shadow: 0 14px 30px -8px rgba(255, 122, 26, 0.9);
+  box-shadow: 0 9px 20px -10px rgba(255, 122, 26, 0.6);
 }
 .menu-cta:active {
   transform: scale(0.96);
 }
-.report-link {
-  display: block;
-  margin-top: 9px;
-  font-size: 12px;
-  color: var(--faint);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
 }
-.report-link:active {
+.card-actions .menu-cta {
+  margin-top: 0;
+}
+.report-btn {
+  border: none;
+  background: var(--bg);
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 9px 15px;
+  border-radius: 12px;
+  box-shadow: var(--raise-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.15s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.report-btn:active {
+  transform: scale(0.95);
+  box-shadow: var(--inset-sm);
   color: var(--muted);
 }
 
@@ -798,16 +816,6 @@ button {
   font-size: 13.5px;
   color: var(--muted);
 }
-.hh {
-  margin-top: 12px;
-  display: inline-block;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #fcd34d;
-  background: rgba(251, 191, 36, 0.12);
-  padding: 6px 12px;
-  border-radius: 10px;
-}
 
 /* Öppet nu-status (lunch) */
 .statuspill {
@@ -842,28 +850,3 @@ button {
   background: var(--faint);
 }
 
-/* Happy hour just nu (öl) */
-@keyframes pulse-badge {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.04);
-  }
-}
-.hhnow-badge {
-  display: inline-block;
-  margin-bottom: 12px;
-  font-size: 13px;
-  font-weight: 800;
-  color: #3a2c05;
-  background: linear-gradient(135deg, #fcd34d, var(--amber));
-  padding: 6px 14px;
-  border-radius: 999px;
-  box-shadow: 0 6px 16px -6px rgba(251, 191, 36, 0.7);
-  animation: pulse-badge 1.6s ease-in-out infinite;
-}
-.card.hhnow {
-  box-shadow: var(--raise), 0 0 0 1.5px rgba(251, 191, 36, 0.5);
-}

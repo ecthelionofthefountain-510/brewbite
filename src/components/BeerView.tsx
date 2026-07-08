@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react'
-import { beerspots, happyHours } from '../data/beerspots'
+import { beerspots, openBeerHours } from '../data/beerspots'
 import {
   CONTAINER_LABEL,
   BEER_SORT_LABEL,
@@ -9,7 +9,7 @@ import {
   type Container,
 } from '../types'
 import { distanceKm, formatDistance } from '../lib/distance'
-import { activeNow } from '../lib/time'
+import { anyActiveNow } from '../lib/time'
 import { reportLink } from '../lib/report'
 import { useNow } from '../hooks/useNow'
 import { YSTAD_CENTER } from '../data/restaurants'
@@ -53,14 +53,14 @@ export default function BeerView({
   const { coords } = geo
   const { weekday, minutes } = useNow()
   const [sort, setSort] = useState<BeerSort>('cl')
-  const [happyOnly, setHappyOnly] = useState(false)
+  const [openNow, setOpenNow] = useState(false)
   const [query, setQuery] = useState('')
   const [containers, setContainers] = useState<Set<Container>>(new Set())
   const [view, setView] = useState<'list' | 'map'>('list')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
 
-  const activeFilterCount = containers.size + (happyOnly ? 1 : 0)
+  const activeFilterCount = containers.size + (openNow ? 1 : 0)
 
   function toggleContainer(c: Container) {
     setContainers((prev) => {
@@ -87,7 +87,9 @@ export default function BeerView({
         cl: krPerCl(s),
         distance: coords ? distanceKm(coords, s) : null,
       }))
-      .filter(({ spot }) => (happyOnly ? !!spot.happyHourInfo : true))
+      .filter(({ spot }) =>
+        openNow ? anyActiveNow(openBeerHours[spot.id], weekday, minutes) : true,
+      )
       .filter(({ spot }) => (containers.size === 0 ? true : containers.has(spot.container)))
       .filter(({ spot }) => {
         if (!q) return true
@@ -105,7 +107,7 @@ export default function BeerView({
       return a.cl - b.cl // 'cl' (default)
     })
     return list
-  }, [sort, happyOnly, containers, query, coords])
+  }, [sort, openNow, containers, query, coords, weekday, minutes])
 
   const mapPoints: MapPoint[] = useMemo(
     () =>
@@ -159,15 +161,15 @@ export default function BeerView({
         <FilterSheet
           sort={sort}
           setSort={setSort}
-          happyOnly={happyOnly}
-          setHappyOnly={setHappyOnly}
+          openNow={openNow}
+          setOpenNow={setOpenNow}
           containers={containers}
           toggleContainer={toggleContainer}
           coords={coords}
           resultCount={items.length}
           onReset={() => {
             setSort('cl')
-            setHappyOnly(false)
+            setOpenNow(false)
             setContainers(new Set())
           }}
           onClose={() => setFilterOpen(false)}
@@ -201,15 +203,14 @@ export default function BeerView({
               <li className="empty">Inga ställen matchar. Prova ett annat sök eller filter.</li>
             )}
             {items.map(({ spot: s, cl, distance }, i) => {
-              const hh = happyHours[s.id]
-              const hhNow = hh ? activeNow(hh, weekday, minutes) : false
+              const openRules = openBeerHours[s.id]
+              const openState = openRules
+                ? anyActiveNow(openRules, weekday, minutes)
+                  ? 'open'
+                  : 'closed'
+                : null
               return (
-              <li
-                key={s.id}
-                className={`card beercard ${hhNow ? 'hhnow' : ''}`}
-                style={{ '--i': i } as CSSProperties}
-              >
-                {hhNow && <div className="hhnow-badge">🍺 Happy hour just nu!</div>}
+              <li key={s.id} className="card beercard" style={{ '--i': i } as CSSProperties}>
                 <div className="card-head">
                   <div>
                     <h2>
@@ -219,7 +220,12 @@ export default function BeerView({
                       {s.area}
                       {distance != null && <> · {formatDistance(distance)}</>}
                     </p>
-                    <p className="beer-address">📍 {s.address}</p>
+                    {openState && (
+                      <span className={`statuspill ${openState}`}>
+                        <span className="pip" />
+                        {openState === 'open' ? 'Öppet nu' : 'Stängt just nu'}
+                      </span>
+                    )}
                   </div>
                   <FavButton id={s.id} isFavorite={isFavorite} toggle={toggle} />
                 </div>
@@ -238,22 +244,16 @@ export default function BeerView({
                   {CONTAINER_LABEL[s.container]} {s.volumeCl} cl · {s.brand}
                 </p>
 
-                {s.happyHourInfo && (
-                  <div className="hh">
-                    🕒 Happy hour
-                    {s.happyHourPrice != null && <> · {s.happyHourPrice} kr</>} · {s.happyHourInfo}
-                  </div>
-                )}
-
                 {s.priceIsExample && <p className="examplenote">Exempelpris – ej verifierat</p>}
-                {s.note && <p className="note">{s.note}</p>}
 
-                <a className="menu-cta" href={directionsLink(s)} target="_blank" rel="noreferrer">
-                  Vägbeskrivning →
-                </a>
-                <a className="report-link" href={reportLink(s.name, `${s.price} kr, ${s.brand}`)}>
-                  🚩 Rapportera fel pris
-                </a>
+                <div className="card-actions">
+                  <a className="menu-cta" href={directionsLink(s)} target="_blank" rel="noreferrer">
+                    Vägbeskrivning →
+                  </a>
+                  <a className="report-btn" href={reportLink(s.name, `${s.price} kr, ${s.brand}`)}>
+                    Rapportera fel pris
+                  </a>
+                </div>
               </li>
               )
             })}
@@ -318,12 +318,14 @@ function BeerPopup({
       <p className="beer-spec">
         {CONTAINER_LABEL[s.container]} {s.volumeCl} cl · {s.brand}
       </p>
-      <a className="menu-cta" href={directionsLink(s)} target="_blank" rel="noreferrer">
-        Vägbeskrivning →
-      </a>
-      <a className="report-link" href={reportLink(s.name, `${s.price} kr, ${s.brand}`)}>
-        🚩 Rapportera fel pris
-      </a>
+      <div className="card-actions">
+        <a className="menu-cta" href={directionsLink(s)} target="_blank" rel="noreferrer">
+          Vägbeskrivning →
+        </a>
+        <a className="report-btn" href={reportLink(s.name, `${s.price} kr, ${s.brand}`)}>
+          Rapportera fel pris
+        </a>
+      </div>
     </div>
   )
 }
@@ -331,8 +333,8 @@ function BeerPopup({
 function FilterSheet({
   sort,
   setSort,
-  happyOnly,
-  setHappyOnly,
+  openNow,
+  setOpenNow,
   containers,
   toggleContainer,
   coords,
@@ -342,8 +344,8 @@ function FilterSheet({
 }: {
   sort: BeerSort
   setSort: (s: BeerSort) => void
-  happyOnly: boolean
-  setHappyOnly: (v: boolean) => void
+  openNow: boolean
+  setOpenNow: (v: boolean) => void
   containers: Set<Container>
   toggleContainer: (c: Container) => void
   coords: Coords | null
@@ -396,10 +398,10 @@ function FilterSheet({
           <h3>Övrigt</h3>
           <div className="beer-sort">
             <button
-              className={`chip ${happyOnly ? 'active' : ''}`}
-              onClick={() => setHappyOnly(!happyOnly)}
+              className={`chip ${openNow ? 'active' : ''}`}
+              onClick={() => setOpenNow(!openNow)}
             >
-              🕒 Happy hour just nu
+              🟢 Öppet just nu
             </button>
           </div>
         </div>
